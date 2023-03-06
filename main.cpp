@@ -267,5 +267,6 @@ class Camin {
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
+    std::cout<<"Commit 2";
     return 0;
 }
