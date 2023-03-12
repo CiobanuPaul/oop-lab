@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
-std::ifstream fin("/home/cartofiprajiti/OOP/Git lab/tastatura.txt");
+std::ifstream fin("tastatura.txt");
 
 
 int nranonim = 5000;
@@ -116,6 +116,8 @@ public:
     }
 
     Adresa& operator=(const Adresa &a){
+        if(&a == this)
+            return *this;
         delete [] strada;
         strada = new char[strlen(a.strada) + 1];
         strcpy(strada, a.strada);
@@ -168,7 +170,7 @@ public:
         strcpy(nume, nume_);
     }
 
-    char *GetNume() {
+    char *GetNume() const{
         return nume;
     }
 
@@ -273,6 +275,8 @@ public:
     }
 
     Locatar& operator=(const Locatar &l){
+        if(&l == this)
+            return *this;
         CNP = l.CNP;
 
         delete [] nume;
@@ -312,7 +316,6 @@ class Camin {
     Locatar **locatari;
     int nrloc;  //nr curent de locatari
     int nrcam;  //nr de camere
-    int capcam; //nr de locatari intr-o camera
     int taxa;
     Adresa adresa;
 
@@ -320,11 +323,7 @@ class Camin {
         locatari[nrloc] = &l;
         nrloc++;
     }
-    void EliminaLocatar(const int i){
-        for(int j=i; j<nrloc-1; j++)
-            locatari[j]=locatari[j+1];
-        nrloc--;
-    }
+
     void EliminaLocatar(const Locatar &l){  //pana o sa adaug un cod de identificare al fiecarui loc
         int i=0;
         while(*locatari[i]!=l)
@@ -365,18 +364,8 @@ public:
         return corp;
     }
 
-    void SetCapacitate(const int capacitate_, const bool schimbareCapcam= false) {
-        Locatar** aux = locatari;
-        locatari = new Locatar*[capacitate_];
-        int i;
-        for(i=0; i < nrloc; i++) {
-            locatari[i] = aux[i];
-        }
-        delete [] aux;
+    void SetCapacitate(const int capacitate_) {
         capacitate = capacitate_;
-        //capacitatea s-a schimbat daca s-a schimbat numarul de camere sau capacitatea unei camere
-        if(schimbareCapcam==0)   //schimbareCapcam verifica ce tip de schimbare avem
-            nrcam = (capacitate-1)/capcam + 1;
 
     }
 
@@ -407,13 +396,6 @@ public:
         return nrcam;
     }
 
-    void SetCapcam(const int capcam_){
-        SetCapacitate(capacitate + (capcam_-capcam)*nrcam, true);
-        capcam = capcam_;
-    }
-    int GetCapcam() const{
-        return capcam;
-    }
     void SetTaxa(const int taxa_) {
         taxa = taxa_;
     }
@@ -426,7 +408,7 @@ public:
         adresa = a;
     }
 
-    Adresa& GetAdresa() {
+    Adresa GetAdresa() const{
         return adresa;
     }
 
@@ -439,7 +421,6 @@ public:
         locatari= nullptr;
         capacitate = 0;
         nrcam = 0;
-        capcam=0;
         taxa = 0;
         admin = new char[7];
         strcpy(admin, "anonim");
@@ -457,7 +438,6 @@ public:
 
         capacitate = capacitate_;
         nrcam = nrcam_;
-        capcam = capacitate/nrcam;
         taxa = taxa_;
 
         locatari = new Locatar*[capacitate];
@@ -485,19 +465,25 @@ public:
         strcpy(corp, c.corp);
 
         capacitate = c.capacitate;
-        nrcam = c.nrcam;
-        capcam = (nrcam!=0) ? (capacitate/nrcam) : 0;
+        nrcam = c.GetNrcam();
         taxa = c.taxa;
+
+        locatari = new Locatar*[capacitate];
 
         admin = new char[strlen(c.admin)+1];
         strcpy(admin, c.admin);
-        nrloc = c.nrloc;
-        if(nrloc){
-            locatari = new Locatar*[nrloc];
-            for(int i=0; i<nrloc; i++)
-                locatari[i] = c.locatari[i];
+
+        if(c.nrloc!=0 && c.locatari==nullptr){
+            std::cout<<"Nu ati setat care sunt locatarii!\n";
+            nrloc = 0;
         }
-        else locatari=nullptr;
+        else {
+            SetNrloc(c.nrloc);
+            for (int i = 0; i < nrloc; i++) {
+                locatari[i] = c.locatari[i];
+            }
+        }
+        adresa = c.adresa;
     }
     ~Camin(){
         delete [] nume;
@@ -506,6 +492,41 @@ public:
         delete [] locatari;
     }
 
+    Camin& operator=(const Camin& c){
+        if(&c == this)
+            return *this;
+        delete [] nume;
+        nume = new char[strlen(c.nume) + 1];
+        strcpy(nume, c.nume);
+
+        delete [] corp;
+        corp = new char[strlen(c.corp) + 1];
+        strcpy(corp, c.corp);
+
+        capacitate = c.capacitate;
+        nrcam = c.GetNrcam();
+        taxa = c.taxa;
+
+        delete [] locatari;
+        locatari = new Locatar*[capacitate];
+
+        delete [] admin;
+        admin = new char[strlen(c.admin)+1];
+        strcpy(admin, c.admin);
+
+        if(c.nrloc!=0 && c.locatari==nullptr){
+            std::cout<<"Nu ati setat care sunt locatarii!\n";
+            nrloc = 0;
+        }
+        else {
+            nrloc = c.nrloc;
+            for (int i = 0; i < nrloc; i++) {
+                locatari[i] = c.locatari[i];
+            }
+        }
+        adresa = c.adresa;
+        return *this;
+    }
     friend std::ostream& operator<<(std::ostream &os, const Camin &c);
     friend std::istream& operator>>(std::istream& is, Camin &c);
     friend std::ifstream& operator>>(std::ifstream& is, Camin &c);
@@ -514,61 +535,61 @@ public:
 };
 
 std::ostream& operator<<(std::ostream& os, const Adresa& a){
-    os<<a.strada<<", nr. "<<a.nr;
-    if(a.sector != 0)os<<", sector "<<a.sector;
-    if(a.codpostal != 0)os<<", "<<a.codpostal;
-    if(strcmp(a.localitate, "Bucuresti")){
-        os<<std::endl<<a.localitate;
-        if(strcmp(a.tara, "Romania"))
-            os<<", "<<a.tara;
+    os<<a.GetStrada()<<", nr. "<<a.GetNr();
+    if(a.GetSector() != 0)os<<", sector "<<a.GetSector();
+    if(a.GetCodpostal() != 0)os<<", "<<a.GetCodpostal();
+    if(strcmp(a.GetLocalitate(), "Bucuresti") != 0){
+        os<<std::endl<<a.GetLocalitate();
+        if(strcmp(a.GetTara(), "Romania") != 0)
+            os<<", "<<a.GetTara();
     }
     os<<"\n";
     return os;
 }
 std::ostream& operator<<(std::ostream& os, const Camin &c){
-    os<<"Caminul "<<c.nume<<' '<<c.corp<<std::endl;
-    if(strcmp(c.adresa.GetStrada(), "anonim") != 0 and c.adresa.GetNr() != 0)
-        os<<"Este situat la adresa:\n"<<c.adresa;
-    os<<"Capacitate: "<<c.capacitate<<std::endl;
-    os<<"Taxa: "<<c.taxa<<"RON"<<std::endl;
-    if(strcmp("anonim", c.admin) != 0){
-        os<<"Administrator: "<<c.admin<<"\n";
+    os<<"Caminul "<<c.GetNume()<<' '<<c.GetCorp()<<std::endl;
+    if(strcmp(c.GetAdresa().GetStrada(), "anonim") != 0 and c.GetAdresa().GetNr() != 0)
+        os<<"Este situat la adresa:\n"<<c.GetAdresa();
+    os<<"Capacitate: "<<c.GetCapacitate()<<std::endl;
+    os<<"Taxa: "<<c.GetTaxa()<<"RON"<<std::endl;
+    if(strcmp("anonim", c.GetAdmin()) != 0){
+        os<<"Administrator: "<<c.GetAdmin()<<"\n";
     }
     os<<"Doriti sa se afiseze datele locatarilor? (Da/Nu)\n";
     char s[3];
-    std::cin.getline(s, 3);
+    fin>>s;
     if(strcmp(s, "Da") == 0) {
         c.AfisLocatari();
         std::cout << "Inserati 'ok' pentru a continua\n";
-        std::cin.getline(s, 20);
+        fin>>s;
         std::cout << "\n";
     }
     std::cout<<"\n";
     return os;
 }
 std::ostream& operator<<(std::ostream& os, const Locatar &l){
-    os<<l.nume<<", "<<l.camera<<", CNP "<<l.CNP<<"\n";
+    os<<l.GetNume()<<", "<<l.GetCamera()<<", CNP "<<l.GetCNP()<<"\n";
     return os;
 }
 
 std::istream& operator>>(std::istream& is, Adresa &a){
     char s[100];
     std::cout<<"Setati adresa caminului\nStrada: ";
-    is.getline(s, 100);
+    is>>s;
     a.SetStrada(s);
     int n;
-    std::cout<<"Nr: "; std::cin>>n; a.SetNr(n);
+    std::cout<<"Nr: "; fin>>n; a.SetNr(n);
     std::cout<<"Caminul se afla in Bucuresti, Romania? ('Da'/'Nu')\n";
     is.get();
-    is.getline(s, 3);
+    is>>s;
     if(strcmp(s, "Nu") == 0){
         std::cout<<"Setati localitatea: ";
-        is.getline(s, 100); a.SetLocalitate(s);
+        is>>s; a.SetLocalitate(s);
         std::cout<<"Setati tara: ";
-        is.getline(s, 100); a.SetTara(s);
+        is>>s; a.SetTara(s);
     }
     std::cout<<"Doriti sa stabiliti detalii despre adresa(codpostal, sector)? ('Da'/'Nu')\n";
-    is.getline(s, 3);
+    is>>s;
     if(strcmp(s, "Da") == 0){
         std::cout<<"Setati codpostal: ";
         is>>n; a.SetCodpostal(n);
@@ -581,21 +602,21 @@ std::istream& operator>>(std::istream& is, Adresa &a){
 std::ifstream& operator>>(std::ifstream& is, Adresa &a){
     char s[100];
     std::cout<<"Setati adresa caminului\nStrada: ";
-    is.getline(s, 100);
+    is>>s;
     a.SetStrada(s);
     int n;
-    std::cout<<"Nr: "; std::cin>>n; a.SetNr(n);
+    std::cout<<"Nr: "; fin>>n; a.SetNr(n);
     std::cout<<"Caminul se afla in Bucuresti, Romania? ('Da'/'Nu')\n";
     is.get();
-    is.getline(s, 3);
+    is>>s;
     if(strcmp(s, "Nu") == 0){
         std::cout<<"Setati localitatea: ";
-        is.getline(s, 100); a.SetLocalitate(s);
+        is>>s; a.SetLocalitate(s);
         std::cout<<"Setati tara: ";
-        is.getline(s, 100); a.SetTara(s);
+        is>>s; a.SetTara(s);
     }
     std::cout<<"Doriti sa stabiliti detalii despre adresa(codpostal, sector)? ('Da'/'Nu')\n";
-    is.getline(s, 3);
+    is>>s;
     if(strcmp(s, "Da") == 0){
         std::cout<<"Setati codpostal: ";
         is>>n; a.SetCodpostal(n);
@@ -608,96 +629,102 @@ std::ifstream& operator>>(std::ifstream& is, Adresa &a){
 
 std::istream& operator>>(std::istream& is, Camin &c){
     char s[100];
+    int n;
     std::cout<<"Dati numele caminului:\n";
-    is.getline(s, 100);
+    is>>s;
     c.SetNume(s);
 
     std::cout<<"Introduceti corpul caminului:\n";
-    is.getline(s, 100);
+    is>>s;
     c.SetCorp(s);
 
     std::cout<<"Introduceti capacitatea de gazduire a caminului(numar posibil de studenti gazduiti):";
-    is>>c.capacitate;
+    is>>n;
+    c.SetCapacitate(n);
     std::cout<<"Introduceti numarul de camere al caminului:";
-    is>>c.nrcam;
-    c.capcam = c.capacitate/c.nrcam;
+    is>>n;
+    c.SetNrcam(n);
     std::cout<<"Introduceti taxa caminului pe o luna(RON):";
-    is>>c.taxa;
-    c.locatari = new Locatar*[c.capacitate];
+    is>>n;
+    c.SetTaxa(n);
+    c.locatari = new Locatar*[c.GetCapacitate()];
     std::cout<<"Introduceti numele administratorului caminului:\n";
     is.get();
-    is.getline(s, 100);
+    is>>s;
     c.SetAdmin(s);
-    std::cin>>c.adresa;
+    Adresa a;
+    is>>a;
+    c.SetAdresa(a);
     return is;
 }
 std::ifstream& operator>>(std::ifstream& is, Camin &c){
-    std::cout<<"Dati numele caminului:\n";
     char s[100];
-    is.getline(s, 100);
+    int n;
+    std::cout<<"Dati numele caminului:\n";
+    is>>s;
     c.SetNume(s);
 
     std::cout<<"Introduceti corpul caminului:\n";
-    is.getline(s, 100);
+    is>>s;
     c.SetCorp(s);
 
     std::cout<<"Introduceti capacitatea de gazduire a caminului(numar posibil de studenti gazduiti):";
-    is>>c.capacitate;
+    is>>n;
+    c.SetCapacitate(n);
     std::cout<<"Introduceti numarul de camere al caminului:";
-    is>>c.nrcam;
-    c.capcam = c.capacitate/c.nrcam;
+    is>>n;
+    c.SetNrcam(n);
     std::cout<<"Introduceti taxa caminului pe o luna(RON):";
-    is>>c.taxa;
-    c.locatari = new Locatar*[c.capacitate];
-//    std::cin>>adresa;
-//    std::cout<<"Setati adresa caminului\nStrada: ";
-//    std::cin.getline(s, 100);
-//    c.adresa.SetStrada(s);
-//    int n;
-//    std::cout<<"Nr: "; std::cin>>n; c.adresa.SetNr(n);
-//    std::cout<<""
+    is>>n;
+    c.SetTaxa(n);
+    c.locatari = new Locatar*[c.GetCapacitate()];
     std::cout<<"Introduceti numele administratorului caminului:\n";
     is.get();
-    is.getline(s, 100);
+    is>>s;
     c.SetAdmin(s);
+    Adresa a;
+    is>>a;
+    c.SetAdresa(a);
     return is;
 }
 
 std::istream& operator>>(std::istream& is, Locatar &l){
     std::cout<<"Introduceti numele locatarului:\n";
     char s[100];
-    is.getline(s,100); l.SetNume(s);
-    std::cout<<"Introduceti CNP-ul: "; is>>l.CNP; is.get();
+    int n;
+    is>>s; l.SetNume(s);
+    std::cout<<"Introduceti CNP-ul: "; is>>n; l.SetCNP(n); is.get();
     std::cout<<"Introduceti facultatea la care este inscris:\n";
-    is.getline(s, 100); l.SetFacultate(s);
-    std::cout<<"Introduceti anul de studiu: "; is>>l.an;
-    std::cout<<"Introduceti camera: "; is>>l.camera;
+    is>>s; l.SetFacultate(s);
+    std::cout<<"Introduceti anul de studiu: "; is>>n; l.SetAn(n);
+    std::cout<<"Introduceti camera: "; is>>n; l.SetCamera(n);
     std::cout<<"Studentul beneficiaza de dosar social? ('Da'/'Nu')\n";
     is.get();
-    is.getline(s,100);
+    is>>s;
     if(strcmp("Da", s)==0)
-        l.dosarSocial= true;
+        l.SetDosarSocial(true);
     else
-        l.dosarSocial= false;
+        l.SetDosarSocial(false);
     ///caminul va fi setat de functia apelanta
     return is;
 }
 std::ifstream& operator>>(std::ifstream& is, Locatar &l){
     std::cout<<"Introduceti numele locatarului:\n";
     char s[100];
-    is.getline(s,100); l.SetNume(s);
-    std::cout<<"Introduceti CNP-ul: "; is>>l.CNP; is.get();
+    int n;
+    is>>s; l.SetNume(s);
+    std::cout<<"Introduceti CNP-ul: "; is>>n; l.SetCNP(n); is.get();
     std::cout<<"Introduceti facultatea la care este inscris:\n";
-    is.getline(s, 100); l.SetFacultate(s);
-    std::cout<<"Introduceti anul de studiu: "; is>>l.an;
-    std::cout<<"Introduceti camera: "; is>>l.camera;
+    is>>s; l.SetFacultate(s);
+    std::cout<<"Introduceti anul de studiu: "; is>>n; l.SetAn(n);
+    std::cout<<"Introduceti camera: "; is>>n; l.SetCamera(n);
     std::cout<<"Studentul beneficiaza de dosar social? ('Da'/'Nu')\n";
     is.get();
-    is.getline(s,100);
+    is>>s;
     if(strcmp("Da", s)==0)
-        l.dosarSocial= true;
+        l.SetDosarSocial(true);
     else
-        l.dosarSocial= false;
+        l.SetDosarSocial(false);
     ///caminul va fi setat de functia apelanta
     return is;
 }
@@ -709,7 +736,7 @@ int nrcamine = 0;
 
 int main() {
     std::cout<<"Inregistrati un camin\n";
-    std::cin>>camine[nrcamine++];
+    fin>>camine[nrcamine++];
     std::cout<<camine[0];
     int opt = -1;
     int cnp, i, j;
@@ -718,40 +745,40 @@ int main() {
         std::cout<<"Alegeti o optiune, inserand cifra aferenta\n";
         std::cout<<"0)Inchideti\n";
         std::cout<<"1)Mai inregistrati un camin\n";
-        std::cout<<"2)Adaugati un locatar la un camin existent\n";
+        std::cout<<"2)Adaugati(Creati) un locatar la un camin existent\n";
         std::cout<<"3)Scoateti un locatar de la un camin\n";
         std::cout<<"4)Mutati un locatar la un (alt) camin\n";
         std::cout<<"5)Schimbati adresa unui camin\n";
         std::cout<<"6)Afisati datele unui camin\n";
         std::cout<<"7)Afisati datele unui locatar\n";
         std::cout<<"8)Afisati datele tuturor locatarilor\n";
-        std::cin>>opt;
-        std::cin.get();
+        fin>>opt;
+        fin.get();
 
         switch(opt) {
             case 1: {
-                std::cin >> camine[nrcamine++];
+                fin >> camine[nrcamine++];
                 std::cout << "Inserati 'ok' pentru a continua\n";
-                std::cin.getline(s2, 20);
+                fin>>s2;
                 std::cout << "\n";
                 break;
             }
             case 2:{
                 std::cout << "Introduceti numele caminului in care vreti sa adaugati un locatar\n";
-                std::cin.getline(s1, 100);
+                fin>>s1;
                 std::cout << "Introduceti corpul caminului\n";
-                std::cin.getline(s2, 20);
+                fin>>s2;
                 for (i = 0; i < nrcamine; i++)
                     if (strcmp(s1, camine[i].GetNume()) == 0 && strcmp(s2, camine[i].GetCorp()) == 0)
                         break;
                 if (i == nrcamine) {
                     std::cout << "Caminul sau corpul nu exista!\n";
                     std::cout << "Inserati 'ok' pentru a continua\n";
-                    std::cin.getline(s2, 20);
+                    fin>>s2;
                     std::cout << "\n";
                     break;
                 }
-                std::cin >> totiLoc[nrToti];
+                fin >> totiLoc[nrToti];
                 bool ok = true;
                 for (j = 0; j < nrToti; j++)
                     if (totiLoc[nrToti].GetCNP() == totiLoc[j].GetCNP())
@@ -759,7 +786,7 @@ int main() {
                 if (!ok) {
                     std::cout << "Locatarul exista deja! ";
                     std::cout << "Inserati 'ok' pentru a continua\n";
-                    std::cin.getline(s2, 20);
+                    fin>>s2;
                     std::cout << "\n";
                     break;
                 }
@@ -768,13 +795,13 @@ int main() {
 
                 std::cout<<"Studentul a fost adaugat cu succes! ";
                 std::cout << "Inserati 'ok' pentru a continua.\n";
-                std::cin.getline(s2, 20);
+                fin>>s2;
                 std::cout << "\n";
                 break;
             }
             case 3: {
                 std::cout << "Dati CNP-ul persoanei pe care vreti sa o scoateti din camin: ";
-                std::cin >> cnp;
+                fin >> cnp;
                 for (i = 0; i < nrToti; i++)
                     if (totiLoc[i].GetCNP() == cnp) {
                         totiLoc[i].RemoveCamin();
@@ -783,18 +810,18 @@ int main() {
                 if (i == nrToti) {
                     std::cout << "Locatarul nu exista!\n";
                     std::cout << "Inserati 'ok' pentru a continua\n";
-                    std::cin.getline(s2, 20);
+                    fin>>s2;
                     std::cout << "\n";
                     break;
                 }
                 std::cout << "Locatarul a fost scos din camin. Scrieti 'ok' pentru a continua.\n";
-                std::cin.get();
-                std::cin.getline(s2, 20);
+                fin.get();
+                fin>>s2;
                 break;
             }
             case 4: {
                 std::cout << "Dati CNP-ul persoanei pe care vreti sa o mutati: ";
-                std::cin >> cnp;
+                fin >> cnp;
                 for (i = 0; i < nrToti; i++)
                     if (totiLoc[i].GetCNP() == cnp) {
                         break;
@@ -802,22 +829,22 @@ int main() {
                 if (i == nrToti) {
                     std::cout << "Locatarul nu exista!\n";
                     std::cout << "Inserati 'ok' pentru a continua\n";
-                    std::cin.getline(s2, 20);
+                    fin>>s2;
                     std::cout << "\n";
                     break;
                 }
                 std::cout << "Introduceti numele caminului unde vreti sa mutati noul locatar:\n";
-                std::cin.get();
-                std::cin.getline(s1, 100);
+                fin.get();
+                fin>>s1;
                 std::cout << "Introduceti corpul caminului\n";
-                std::cin.getline(s2, 20);
+                fin>>s2;
                 for (j = 0; j < nrcamine; j++)
                     if (strcmp(s1, camine[j].GetNume()) == 0 && strcmp(s2, camine[j].GetCorp()) == 0)
                         break;
                 if (j == nrcamine) {
                     std::cout << "Caminul sau corpul nu exista!\n";
                     std::cout << "Inserati 'ok' pentru a continua\n";
-                    std::cin.getline(s2, 20);
+                    fin>>s2;
                     std::cout << "\n";
                     break;
                 }
@@ -825,47 +852,47 @@ int main() {
 
                 std::cout<<"Studentul a fost mutat cu succes! ";
                 std::cout << "Inserati 'ok' pentru a continua\n";
-                std::cin.getline(s2, 20);
+                fin>>s2;
                 std::cout << "\n";
                 break;
             }
 
             case 5:{
                 std::cout << "Introduceti numele caminului a carui adresa doriti sa o schimbati:\n";
-                std::cin.getline(s1, 100);
+                fin>>s1;
                 std::cout << "Introduceti corpul caminului\n";
-                std::cin.getline(s2, 20);
+                fin>>s2;
                 for (j = 0; j < nrcamine; j++)
                     if (strcmp(s1, camine[j].GetNume()) == 0 && strcmp(s2, camine[j].GetCorp()) == 0)
                         break;
                 if (j == nrcamine) {
                     std::cout << "Caminul sau corpul nu exista!\n";
                     std::cout << "Inserati 'ok' pentru a continua\n";
-                    std::cin.getline(s2, 20);
+                    fin>>s2;
                     std::cout << "\n";
                     break;
                 }
                 Adresa a;
-                std::cin>>a;
+                fin>>a;
                 camine[j].SetAdresa(a);
                 std::cout<<"Adresa a fost schimbata cu succes! ";
                 std::cout << "Inserati 'ok' pentru a continua\n";
-                std::cin.getline(s2, 20);
+                fin>>s2;
                 std::cout << "\n";
                 break;
             }
             case 6: {
                 std::cout << "Introduceti numele caminului pe care vreti sa-l afisati:\n";
-                std::cin.getline(s1, 100);
+                fin>>s1;
                 std::cout << "Introduceti corpul caminului\n";
-                std::cin.getline(s2, 20);
+                fin>>s2;
                 for (j = 0; j < nrcamine; j++)
                     if (strcmp(s1, camine[j].GetNume()) == 0 && strcmp(s2, camine[j].GetCorp()) == 0)
                         break;
                 if (j == nrcamine) {
                     std::cout << "Caminul sau corpul nu exista!\n";
                     std::cout << "Inserati 'ok' pentru a continua\n";
-                    std::cin.getline(s2, 20);
+                    fin>>s2;
                     std::cout << "\n";
                     break;
                 }
@@ -874,8 +901,8 @@ int main() {
             }
             case 7: {
                 std::cout << "Dati CNP-ul studentului ale carui date doriti sa le vedeti: ";
-                std::cin >> cnp;
-                std::cin.get();
+                fin >> cnp;
+                fin.get();
                 for (i = 0; i < nrToti; i++)
                     if (totiLoc[i].GetCNP() == cnp) {
                         break;
@@ -883,13 +910,13 @@ int main() {
                 if (i == nrToti) {
                     std::cout << "Locatarul nu exista!\n";
                     std::cout << "Inserati 'ok' pentru a continua\n";
-                    std::cin.getline(s2, 20);
+                    fin>>s2;
                     std::cout << "\n";
                     break;
                 }
                 totiLoc[i].AfisDate();
                 std::cout << "Inserati 'ok' pentru a continua\n";
-                std::cin.getline(s2, 20);
+                fin>>s2;
                 std::cout << "\n";
                 break;
             }
@@ -904,7 +931,7 @@ int main() {
                     if(! totiLoc[i].AreCamin())
                         std::cout<<totiLoc[i]<<"Fara camin\n";
                 std::cout << "Inserati 'ok' pentru a continua\n";
-                std::cin.getline(s2, 20);
+                fin>>s2;
                 std::cout << "\n";
                 break;
             }
@@ -919,34 +946,36 @@ int main() {
 //le-am pus aici pentru a avea acces la metodele clasei Camin
 void Locatar::AfisDate() const {
     if(camin != nullptr){
-        std::cout<<camin->GetNume()<<"\n";
+        std::cout<<GetCamin().GetNume()<<"\n";
     }
-    std::cout<<nume<<", "<<camera<<std::endl;
+    std::cout<<GetNume()<<", "<<GetCamera()<<std::endl;
     if(camin != nullptr){
-        std::cout<<"Corp "<<camin->GetCorp()<<std::endl;
+        std::cout<<"Corp "<<GetCamin().GetCorp()<<std::endl;
     }
-    std::cout<<facultate<<", anul "<<an<<std::endl<<std::endl;
-
+    std::cout<<GetFacultate()<<", anul "<<GetAn();
+    if(GetDosarSocial())
+        std::cout<<", dosar social";
+    std::cout<<"\n\n";
 }
 void Locatar::SetCamin(Camin &c_) {
     if(camin==&c_) {
         std::cout << "Locatarul este deja in camin!\n";
         return;
     }
-    if(c_.nrloc == c_.capacitate) {
-        std::cout << "Caminul a ajuns la capacitatea maxima: " <<c_.capacitate<<"!\n";
+    if(c_.GetNrloc() == c_.GetCapacitate()) {
+        std::cout << "Caminul a ajuns la capacitatea maxima: " <<c_.GetCapacitate()<<"!\n";
         return;
     }
     if(camin!=nullptr)
-        camin->EliminaLocatar(*this);
+        GetCamin().EliminaLocatar(*this);
     camin = &c_;
-    camin->AdaugaLocatar(*this);
+    GetCamin().AdaugaLocatar(*this);
 }
 void Locatar::RemoveCamin(){
     if(camin == nullptr){
         std::cout<<"Locatarul oricum nu are camin!\n";
         return;
     }
-    camin->EliminaLocatar(*this);
+    GetCamin().EliminaLocatar(*this);
     camin = nullptr;
 }

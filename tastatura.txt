@@ -3,7 +3,7 @@ b
 200
 50
 170
-Costina Marinache
+CostinaMarinache
 Crivitei
 3
 Da
@@ -21,6 +21,7 @@ fmi
 Nu
 ok
 4
+1
 koga
 b
 ok
@@ -28,6 +29,7 @@ ok
 1
 ok
 4
+1
 koga
 b
 ok
@@ -49,8 +51,9 @@ b
 Da
 ok
 5
+koga
 b
-Corin Bontea
+CorinBontea
 2
 Da
 Nu
@@ -65,8 +68,11 @@ ok
 1
 groza
 a
-Farcas George
-Verdeata Marului
+400
+50
+180
+FarcasGeorge
+VerdeataMarului
 32
 Nu
 Londra
