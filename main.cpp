@@ -557,11 +557,11 @@ std::ostream& operator<<(std::ostream& os, const Camin &c){
     }
     os<<"Doriti sa se afiseze datele locatarilor? (Da/Nu)\n";
     char s[3];
-    fin>>s;
+    std::cin>>s;
     if(strcmp(s, "Da") == 0) {
         c.AfisLocatari();
         std::cout << "Inserati 'ok' pentru a continua\n";
-        fin>>s;
+        std::cin>>s;
         std::cout << "\n";
     }
     std::cout<<"\n";
@@ -578,7 +578,7 @@ std::istream& operator>>(std::istream& is, Adresa &a){
     is>>s;
     a.SetStrada(s);
     int n;
-    std::cout<<"Nr: "; fin>>n; a.SetNr(n);
+    std::cout<<"Nr: "; std::cin>>n; a.SetNr(n);
     std::cout<<"Caminul se afla in Bucuresti, Romania? ('Da'/'Nu')\n";
     is.get();
     is>>s;
@@ -605,7 +605,7 @@ std::ifstream& operator>>(std::ifstream& is, Adresa &a){
     is>>s;
     a.SetStrada(s);
     int n;
-    std::cout<<"Nr: "; fin>>n; a.SetNr(n);
+    std::cout<<"Nr: "; std::cin>>n; a.SetNr(n);
     std::cout<<"Caminul se afla in Bucuresti, Romania? ('Da'/'Nu')\n";
     is.get();
     is>>s;
@@ -736,7 +736,7 @@ int nrcamine = 0;
 
 int main() {
     std::cout<<"Inregistrati un camin\n";
-    fin>>camine[nrcamine++];
+    std::cin>>camine[nrcamine++];
     std::cout<<camine[0];
     int opt = -1;
     int cnp, i, j;
@@ -752,33 +752,33 @@ int main() {
         std::cout<<"6)Afisati datele unui camin\n";
         std::cout<<"7)Afisati datele unui locatar\n";
         std::cout<<"8)Afisati datele tuturor locatarilor\n";
-        fin>>opt;
-        fin.get();
+        std::cin>>opt;
+        std::cin.get();
 
         switch(opt) {
             case 1: {
-                fin >> camine[nrcamine++];
+                std::cin >> camine[nrcamine++];
                 std::cout << "Inserati 'ok' pentru a continua\n";
-                fin>>s2;
+                std::cin>>s2;
                 std::cout << "\n";
                 break;
             }
             case 2:{
                 std::cout << "Introduceti numele caminului in care vreti sa adaugati un locatar\n";
-                fin>>s1;
+                std::cin>>s1;
                 std::cout << "Introduceti corpul caminului\n";
-                fin>>s2;
+                std::cin>>s2;
                 for (i = 0; i < nrcamine; i++)
                     if (strcmp(s1, camine[i].GetNume()) == 0 && strcmp(s2, camine[i].GetCorp()) == 0)
                         break;
                 if (i == nrcamine) {
                     std::cout << "Caminul sau corpul nu exista!\n";
                     std::cout << "Inserati 'ok' pentru a continua\n";
-                    fin>>s2;
+                    std::cin>>s2;
                     std::cout << "\n";
                     break;
                 }
-                fin >> totiLoc[nrToti];
+                std::cin >> totiLoc[nrToti];
                 bool ok = true;
                 for (j = 0; j < nrToti; j++)
                     if (totiLoc[nrToti].GetCNP() == totiLoc[j].GetCNP())
@@ -786,7 +786,7 @@ int main() {
                 if (!ok) {
                     std::cout << "Locatarul exista deja! ";
                     std::cout << "Inserati 'ok' pentru a continua\n";
-                    fin>>s2;
+                    std::cin>>s2;
                     std::cout << "\n";
                     break;
                 }
@@ -795,13 +795,13 @@ int main() {
 
                 std::cout<<"Studentul a fost adaugat cu succes! ";
                 std::cout << "Inserati 'ok' pentru a continua.\n";
-                fin>>s2;
+                std::cin>>s2;
                 std::cout << "\n";
                 break;
             }
             case 3: {
                 std::cout << "Dati CNP-ul persoanei pe care vreti sa o scoateti din camin: ";
-                fin >> cnp;
+                std::cin >> cnp;
                 for (i = 0; i < nrToti; i++)
                     if (totiLoc[i].GetCNP() == cnp) {
                         totiLoc[i].RemoveCamin();
@@ -810,18 +810,18 @@ int main() {
                 if (i == nrToti) {
                     std::cout << "Locatarul nu exista!\n";
                     std::cout << "Inserati 'ok' pentru a continua\n";
-                    fin>>s2;
+                    std::cin>>s2;
                     std::cout << "\n";
                     break;
                 }
                 std::cout << "Locatarul a fost scos din camin. Scrieti 'ok' pentru a continua.\n";
-                fin.get();
-                fin>>s2;
+                std::cin.get();
+                std::cin>>s2;
                 break;
             }
             case 4: {
                 std::cout << "Dati CNP-ul persoanei pe care vreti sa o mutati: ";
-                fin >> cnp;
+                std::cin >> cnp;
                 for (i = 0; i < nrToti; i++)
                     if (totiLoc[i].GetCNP() == cnp) {
                         break;
@@ -829,22 +829,22 @@ int main() {
                 if (i == nrToti) {
                     std::cout << "Locatarul nu exista!\n";
                     std::cout << "Inserati 'ok' pentru a continua\n";
-                    fin>>s2;
+                    std::cin>>s2;
                     std::cout << "\n";
                     break;
                 }
                 std::cout << "Introduceti numele caminului unde vreti sa mutati noul locatar:\n";
-                fin.get();
-                fin>>s1;
+                std::cin.get();
+                std::cin>>s1;
                 std::cout << "Introduceti corpul caminului\n";
-                fin>>s2;
+                std::cin>>s2;
                 for (j = 0; j < nrcamine; j++)
                     if (strcmp(s1, camine[j].GetNume()) == 0 && strcmp(s2, camine[j].GetCorp()) == 0)
                         break;
                 if (j == nrcamine) {
                     std::cout << "Caminul sau corpul nu exista!\n";
                     std::cout << "Inserati 'ok' pentru a continua\n";
-                    fin>>s2;
+                    std::cin>>s2;
                     std::cout << "\n";
                     break;
                 }
@@ -852,47 +852,47 @@ int main() {
 
                 std::cout<<"Studentul a fost mutat cu succes! ";
                 std::cout << "Inserati 'ok' pentru a continua\n";
-                fin>>s2;
+                std::cin>>s2;
                 std::cout << "\n";
                 break;
             }
 
             case 5:{
                 std::cout << "Introduceti numele caminului a carui adresa doriti sa o schimbati:\n";
-                fin>>s1;
+                std::cin>>s1;
                 std::cout << "Introduceti corpul caminului\n";
-                fin>>s2;
+                std::cin>>s2;
                 for (j = 0; j < nrcamine; j++)
                     if (strcmp(s1, camine[j].GetNume()) == 0 && strcmp(s2, camine[j].GetCorp()) == 0)
                         break;
                 if (j == nrcamine) {
                     std::cout << "Caminul sau corpul nu exista!\n";
                     std::cout << "Inserati 'ok' pentru a continua\n";
-                    fin>>s2;
+                    std::cin>>s2;
                     std::cout << "\n";
                     break;
                 }
                 Adresa a;
-                fin>>a;
+                std::cin>>a;
                 camine[j].SetAdresa(a);
                 std::cout<<"Adresa a fost schimbata cu succes! ";
                 std::cout << "Inserati 'ok' pentru a continua\n";
-                fin>>s2;
+                std::cin>>s2;
                 std::cout << "\n";
                 break;
             }
             case 6: {
                 std::cout << "Introduceti numele caminului pe care vreti sa-l afisati:\n";
-                fin>>s1;
+                std::cin>>s1;
                 std::cout << "Introduceti corpul caminului\n";
-                fin>>s2;
+                std::cin>>s2;
                 for (j = 0; j < nrcamine; j++)
                     if (strcmp(s1, camine[j].GetNume()) == 0 && strcmp(s2, camine[j].GetCorp()) == 0)
                         break;
                 if (j == nrcamine) {
                     std::cout << "Caminul sau corpul nu exista!\n";
                     std::cout << "Inserati 'ok' pentru a continua\n";
-                    fin>>s2;
+                    std::cin>>s2;
                     std::cout << "\n";
                     break;
                 }
@@ -901,8 +901,8 @@ int main() {
             }
             case 7: {
                 std::cout << "Dati CNP-ul studentului ale carui date doriti sa le vedeti: ";
-                fin >> cnp;
-                fin.get();
+                std::cin >> cnp;
+                std::cin.get();
                 for (i = 0; i < nrToti; i++)
                     if (totiLoc[i].GetCNP() == cnp) {
                         break;
@@ -910,13 +910,13 @@ int main() {
                 if (i == nrToti) {
                     std::cout << "Locatarul nu exista!\n";
                     std::cout << "Inserati 'ok' pentru a continua\n";
-                    fin>>s2;
+                    std::cin>>s2;
                     std::cout << "\n";
                     break;
                 }
                 totiLoc[i].AfisDate();
                 std::cout << "Inserati 'ok' pentru a continua\n";
-                fin>>s2;
+                std::cin>>s2;
                 std::cout << "\n";
                 break;
             }
@@ -931,7 +931,7 @@ int main() {
                     if(! totiLoc[i].AreCamin())
                         std::cout<<totiLoc[i]<<"Fara camin\n";
                 std::cout << "Inserati 'ok' pentru a continua\n";
-                fin>>s2;
+                std::cin>>s2;
                 std::cout << "\n";
                 break;
             }
